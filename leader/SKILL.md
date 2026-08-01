@@ -27,6 +27,8 @@ description: 把一句话的想法拆成 AI agent 能独立跑完的目标任务
 
 Spec 的交付结构、Schema 审核、实测、护栏、验收与探索型写法统一见 [references/anatomy.md](references/anatomy.md)。
 
+**JSON 方便人工审核**：Spec 中所有 JSON 样例都放进 `json` fenced code block，使用 2 空格缩进并让每个 key 单独成行；不得把多字段 object 或多元素 array 压成单行。目标是让领导能直接逐字段审核，不把 compact JSON 当作节省篇幅。
+
 **先分型**：动笔前能写出验收命令的是**执行型**，全套照走。领导要答案本身（调研、选型、该不该做 X）的是**探索型**——硬指标只会收到凑数的答案，改四处见 anatomy.md。
 
 **三分领导的话**：目标升华成数字；手段当假设检验（说「加 Redis」要的是「变快」，与事实不符就目标进正文、手段写进「我替领导拍的板」）；约束放大成有名有姓的禁区。
