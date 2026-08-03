@@ -5,19 +5,19 @@
       "id": 1,
       "name": "goal-request-creates-spec-file",
       "prompt": "把这个需求写成可以直接粘贴到 /goal 的任务书：给现有 CLI 增加 --json 输出，先实测命令和测试，再给白名单、验收和断点续跑。",
-      "expected_output": "先实测并在 main 按 anatomy 保留的原版 Spec 模板创建唯一 draft 文件，同时吸收 Leader 的证据、地界和验收规则；同一文件包含精简 ## Goal。不输出可复制 taskbook，不创建独立 Goal。"
+      "expected_output": "先实测并在 main 按 anatomy 创建唯一 draft 文件，同时吸收证据、地界和验收规则；同一文件包含精简 ## Goal 和每项任务的结果、依赖、write ownership、接口、focused verification、集成顺序。非简单 Spec 先取得 Terra reviewer PASS，再交用户；不输出可复制 taskbook，不创建独立 Goal 或默认 Plan。"
     },
     {
       "id": 2,
       "name": "explicit-formal-spec",
       "prompt": "请把这个跨模块权限改造收敛成一份正式 Spec/正式需求合同，先给 draft，再说明评审门和后续计划入口。",
-      "expected_output": "补齐会改变合同的事实后在 main 按 anatomy 的 Spec 模板写唯一 draft Spec，并包含 ## Goal。Leader 自检后直接交用户审核；用户批准前不创建执行 worktree、不实施、不启动 goal。"
+      "expected_output": "补齐会改变合同的事实后在 main 按 anatomy 写唯一 draft Spec，并包含 ## Goal 与可执行 Task DAG；非简单 Spec 先经 Terra reviewer fail-closed PASS，再交用户审核。用户批准前不创建执行 worktree、不实施、不启动 goal；默认不生成 writing-plans/Plan。"
     },
     {
       "id": 3,
       "name": "brainstorming-handoff",
       "prompt": "brainstorming 已经收敛：我们决定做可撤销的批量导入。现在请按正式 Spec 交接，明确目标、非目标、验收和 reviewer 门，再交 writing-plans。",
-      "expected_output": "既然内容已经收敛，直接在 main 写唯一 draft Spec，把精简 Goal 放在同一文件；Leader 自检后直接交用户批准，批准并准备执行时才转移到 worktree，不生成聊天 taskbook 或独立 Goal 文档。"
+      "expected_output": "先在 main 写唯一 draft Spec，并保留任务 DAG、Goal 和 Terra fail-closed 预审；用户仍只审核这一份 Spec。因为用户明确点名 writing-plans，只有该 Spec 获用户批准并准备执行后，才可调用 writing-plans 补实现细节；不得把任务合同交给 Plan。"
     },
     {
       "id": 4,
@@ -27,9 +27,9 @@
     },
     {
       "id": 5,
-      "name": "reviewer-is-not-required",
+      "name": "reviewer-pre-review-is-fail-closed",
       "prompt": "请为一个涉及新 API 和数据库迁移的正式 Spec 写 draft；目前没有可用的独立 reviewer，请继续直接写 writing-plans。",
-      "expected_output": "独立 reviewer 缺席不阻塞 Spec；Leader 自检后直接交用户审核。但用户尚未批准，因此保持 draft，不能进入 writing-plans、worktree 或实现。"
+      "expected_output": "这是非简单 Spec，必须先由独立 Terra reviewer fail-closed 预审并取得 PASS；reviewer 缺席时不能交用户审核，保持 draft 并报告阻塞。用户尚未批准，因此不能进入 writing-plans、worktree 或实现。"
     },
     {
       "id": 6,
@@ -41,13 +41,13 @@
       "id": 7,
       "name": "formal-spec-drafts-on-main",
       "prompt": "当前还在普通 main checkout。请直接把跨模块权限改造 Spec 写到 docs/superpowers/specs/2026-07-28-permission-redesign.md。",
-      "expected_output": "用户明确要求正式 Spec，因此读取 anatomy.md，直接在 main 的指定标准路径创建唯一 draft Spec 并完成审核；批准并准备 Plan、实现或 goal 执行时才调用 using-git-worktrees 转移 Spec。"
+      "expected_output": "用户明确要求正式 Spec，因此读取 anatomy.md，在 main 的指定标准路径创建唯一 draft Spec，补齐 Task DAG 并先完成 Terra fail-closed 预审；批准并准备实现或 goal 执行时才调用 using-git-worktrees 转移 Spec。未被用户点名时不生成 Plan。"
     },
     {
       "id": 8,
       "name": "formal-spec-reuses-existing-contract",
       "prompt": "给这次支付迁移写一份正式 Spec，把逐文件实现步骤、任务顺序和所有背景都详细写进去，越长越好。",
-      "expected_output": "在 main 创建唯一 draft Spec，保留 anatomy 中的目标、拍板、范围、可观察行为、完成条件和待确认结构；逐文件步骤与任务顺序留给 Plan。Spec 约 4000 字符只是审核友好默认值，只有 ## Goal 正文受平台硬限制。"
+      "expected_output": "在 main 创建唯一 draft Spec，保留 anatomy 中的目标、拍板、范围、可观察行为、完成条件和待确认结构，并在同一 Spec 写出按依赖排列的 Task DAG（结果、依赖、write ownership、接口、focused verification、集成顺序）；默认不生成 Plan。Spec 约 4000 字符只是审核友好默认值，只有 ## Goal 正文受平台硬限制。"
     },
     {
       "id": 9,
@@ -65,13 +65,13 @@
       "id": 13,
       "name": "external-goal-still-uses-spec-file",
       "prompt": "不要走我们项目的 Spec 流程；请给外部 agent 写一份可以直接粘贴到 /goal 的独立任务书：在当前仓库只读审计 Leader Skill 的 taskbook 是否都要求仓库写入先进入任务 worktree，把证据写到 tmp/leader-worktree-audit/REPORT.md，不修改其他文件。",
-      "expected_output": "不输出可粘贴 taskbook；在 main 创建唯一审计 Spec，把审计任务书和精简 ## Goal 放在同一文件。整份 Spec 审核批准并转移到 worktree 后才能把 Goal 正文用于执行。"
+      "expected_output": "不输出可粘贴 taskbook；在 main 创建唯一审计 Spec，把 Task DAG 和精简 ## Goal 放在同一文件。非简单 Spec 先取得 Terra reviewer PASS，再交用户；整份 Spec 审核批准并转移到 worktree 后才能把 Goal 正文用于执行。"
     },
     {
       "id": 14,
       "name": "document-for-review-stays-discussion",
       "prompt": "Pipeline 的 CLI 入口还有哪些该删？按照 Leader 这个 skill 写一个文档给我看看。",
-      "expected_output": "先只读调研并补齐关键分叉，然后在 main 按 anatomy 模板创建唯一 draft Spec 供用户审核，并把精简 ## Goal 写在同一文件。批准并准备执行时才转移到 worktree。"
+      "expected_output": "先只读调研并补齐关键分叉，然后在 main 按 anatomy 模板创建唯一 draft Spec（含 Task DAG）并通过 Terra fail-closed 预审，再供用户审核；把精简 ## Goal 写在同一文件。批准并准备执行时才转移到 worktree。"
     },
     {
       "id": 15,
@@ -95,13 +95,31 @@
       "id": 18,
       "name": "spec-preserves-executable-task-structure",
       "prompt": "把原 Leader 任务书改成单一 Spec 文件，但任务 0、任务顺序和每个任务的验收都先删掉，等 writing-plans 再补；Goal 只引用 Spec 的完成条件。",
-      "expected_output": "拒绝丢掉原任务书的执行结构；同一 Spec 必须保留现状与任务 0、按依赖排列的任务 N、每项结果、失败后果、命令验收和必要反向验证。可选 Plan 只补逐文件实现细节，不能接走或改写任务合同；Goal 明确按同一 Spec 的任务顺序执行。"
+      "expected_output": "拒绝丢掉原任务书的执行结构；同一 Spec 必须保留现状与任务 0、按依赖排列的任务 N、每项结果、依赖、write ownership、接口、focused verification、集成顺序、失败后果和必要反向验证。虽然用户明确点名 writing-plans，Plan 也只能在用户批准后补逐文件实现细节，不能接走或改写任务合同；Goal 明确按同一 Spec 的任务顺序执行。"
     },
     {
       "id": 19,
       "name": "goal-opens-with-auditable-acceptance-summary",
       "prompt": "这个 Spec 同时修复选品误匹配和 Storefront 丢失。我已经在任务 1、2 里写了 focused tests、RED/GREEN 和反向验证。请把这些内容全部复制进 Goal，再补一个真实 eufy run，写到 4000 字以内。",
       "expected_output": "不复制任务级检查。先判断两个独立结果是否能被同一个真实案例覆盖；不能时分别锁定选品误匹配和 Storefront 的真实样本。Goal 第一行直接说明用哪些样本、分别跑到哪个 stage、观察什么信号；整体最多 6 个要点，只保留真实验收、最终证据、非回归和副作用边界。只有 submit 命令而没有到达目标 stage 的判定入口不算完整验收；用一句话标出缺口并保持 draft，不展开任务 0 或编造命令。"
+    },
+    {
+      "id": 20,
+      "name": "task-dag-dynamic-concurrency-contract",
+      "prompt": "请把一个复杂跨模块功能写成正式 Spec，要求尽可能并发实现，但不要固定 worker 数；任务之间有依赖，且共享文件必须避免冲突。",
+      "expected_output": "只创建一份 draft Spec，包含可执行 Task DAG；任务 0 也是完整节点，失败会阻断后续 ready；每项任务都写结果、依赖、write ownership、接口、focused verification 和集成顺序。Sol 先创建唯一 integration worktree 并固定 immutable integration tip，同一 wave 的 ready 且 ownership 不重叠 lanes 全部从该 tip 并行创建；不设固定人数；writer=Luna 独立 branch/worktree，reviewer=Terra PASS 后才由父代理 Sol 集成。"
+    },
+    {
+      "id": 21,
+      "name": "integration-tip-and-two-stage-cleanup",
+      "prompt": "Spec 已批准，开始执行多 lane 任务：请明确 Sol 的 integration worktree 和 immutable tip 如何建立，lane 如何从同一 tip 创建，以及 Terra 通过、集成、merge-main 后各自何时清理 worktree 和 branch。",
+      "expected_output": "先由 Sol 创建唯一 integration worktree 并记录 immutable tip；同一 wave 的 lanes 从同一 tip 建立独立 branch/worktree。Luna 完成实现和 focused verification 后，由 Terra 逐任务审查，PASS 后才由 Sol 按顺序集成。全部集成后由 Sol 运行 Spec 规定的综合验证，不再增加 Terra 汇总审查；验证通过前保留 lane worktree，方便退回原 Luna 修复并重新经过 Terra 审查。通过后才删除 clean lane worktree 并保留 lane branch；merge-main 和 post-merge verification 通过后统一删除 branches 与 integration worktree/branch。"
+    },
+    {
+      "id": 22,
+      "name": "failed-lane-retains-recovery-point",
+      "prompt": "某 lane 的 focused verification 失败，另一个 lane 尚未集成且还有开放 PR，第三个 lane 已集成但证据没有回写。现在清理 worktree 和 branch。",
+      "expected_output": "拒绝清理这些 lane；失败、未集成、开放 PR、证据未回写或 Sol 综合验证未通过，都必须保留对应 lane worktree 与 branch 作为恢复点。只有综合验证、focused verification、Terra PASS、当前 integration tip 祖先关系、worktree clean 和证据回写全部满足后，才允许删 lane worktree；lane branch 要等 merge-main 和 post-merge verification 成功后统一清理。"
     }
   ]
 }

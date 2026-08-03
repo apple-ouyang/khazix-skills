@@ -46,13 +46,35 @@ review_status: draft
 - [带来源和日期的实测基线；查不到的标「猜的，没验证」。]
 - [开工前必须运行的前提核验命令；数字或合同对不上时如何停止。]
 
+## 任务 0：前提核验
+
+- 结果：[核对后的基线、命令和可继续执行的前提。]
+- 依赖：无。
+- `write ownership`：无（只读；如需写入核验 artifact，列出唯一白名单路径）。
+- 接口：[向后续任务提供的基线、tip 或合同；不得依赖口头状态。]
+- focused verification：`[命令]`；[机器可判的通过条件，包含命令存在、数字匹配和跳过数为 0。]
+- 集成顺序：所有后续任务的 ready 前置；失败时阻断全部后续 ready。
+- 失败后果：[记录 `BLOCKED.md` 或保留恢复点；不得带着未核对前提继续。]
+- 反向验证：[让一个关键前提故意不匹配，贴出阻断输出，还原后重新通过。]
+
 ## 任务 1：[结果名称]
 
-- 目标：[可观察结果和数字。]
-- 顺序：[从哪下手、依赖什么，以及为什么排在这里。]
-- 死规矩：[必须做什么；违反后的具体后果。]
-- 验收：`[命令]`；[机器可判的通过条件。]
-- 反向验证：[如何制造一次预期失败、还原并重新通过。]
+- 结果：[可观察结果和数字；任务交付给下游的 artifact 或状态。]
+- 依赖：[任务编号或「无」；只有依赖完成才进入 ready。]
+- `write ownership`：[唯一允许写入的路径或资源；与其它任务不得重叠。]
+- 接口：[输入、输出、共享合同和下游读取方式；没有隐含口头接口。]
+- focused verification：`[命令]`；[机器可判的通过条件，包含跳过数为 0 等防漏判定。]
+- 集成顺序：[相对其它任务的集成位置；冲突时退回原 writer。]
+- 失败后果：[失败时阻断谁、保留什么恢复点。]
+- 反向验证：[如何制造一次预期失败，贴出红色输出，还原后重新通过。]
+
+## 协作与集成（多任务时适用）
+
+- Sol 先创建唯一 integration worktree，并从 approved Spec 固定 immutable integration tip；同一 wave 的所有 lane 从该 tip 创建独立 branch/worktree。writer 使用独立 branch/worktree，由 `worker=Luna` 实现；`reviewer=Terra` 独立审核；父代理 `Sol` 按本 Spec 集成。
+- `ready = 依赖已完成`；任务 0 通过是所有后续 ready 的前置；同时启动所有 ready 且 `write ownership` 不重叠的任务，不设固定并发人数。
+- 每个 lane 必须有 commit 和 focused verification；Terra `PASS` 前 Sol 不得集成。已有 dirty worktree 只读，不接管、不重启、不改写。
+- 全部 lane 集成后由 Sol 运行 Spec 规定的综合验证，不再增加一次 Terra 汇总审查。综合验证通过前保留 lane worktree，方便把问题退回原 Luna 修复并重新经过 Terra 审查。
+- 删除 lane worktree 前必须同时证明综合验证、focused verification、Terra `PASS`、lane commit 的祖先关系、worktree clean 和证据回写均通过；否则保留 lane worktree 与 branch。`merge-main` 成功并完成 post-merge verification 后，才统一清理 lane branches 与 integration worktree/branch。
 
 ## 规矩
 
@@ -93,7 +115,7 @@ Goal 是执行控制面和领导的验收索引，不是第二份任务书。第
 
 具体例子属于用户批准合同。例子缺失、与正文不一致或仍有会改变 shape 的待确认事项时，保持 `review_status: draft`，不得批准或执行。
 
-Spec 必须保留能让 agent 独立跑完的任务顺序：任务 0、任务 N 的结果、依赖、失败后果、验收和必要反向验证。逐文件实现清单、worker 分工、commit 边界和 worktree 合入细节才属于可选 Plan；Plan 只能展开实现，不能接走或改写 Spec 的任务合同。`PROGRESS.md` / `BLOCKED.md` 在执行阶段创建，存在时作为执行证据索引，不能替代 Spec 或实际验证。Goal 不重复 Spec 或 Plan 内容，只指向同一 Spec 的任务顺序。
+Spec 必须保留能让 agent 独立跑完的任务 DAG：任务 0 也必须有结果、依赖、`write ownership`、接口、focused verification、集成顺序、失败后果和必要反向验证；它通过前不得把任何后续任务标为 ready。默认不调用或生成 `writing-plans`/Plan；只有用户明确点名时，Plan 才能补逐文件实现清单、worker 分工、commit 边界和 worktree 合入细节，且不能接走或改写 Spec 的任务合同。非简单 Spec 交用户前必须有 Terra reviewer 的 fail-closed `PASS`，用户仍只审核这一份 Spec。`PROGRESS.md` / `BLOCKED.md` 在执行阶段创建，存在时作为执行证据索引，不能替代 Spec 或实际验证。Goal 不重复 Spec 或 Plan 内容，只指向同一 Spec 的任务顺序。
 
 ## 原任务书内容规则
 
@@ -121,7 +143,7 @@ Spec 必须保留能让 agent 独立跑完的任务顺序：任务 0、任务 N 
 ## 现状与任务 0
 
 - 实测数字逐条带来源与日期，查不到的标「猜的，没验证」；能提前实证的关键结论（如「只改实现就能全绿」）写进来，提前拆掉借口
-- 任务 0：跑指定命令核对上面的数字，不存在的命令、空转的假检查当场记 `BLOCKED.md`；对不上就停，证据写 `BLOCKED.md` 最上面，只做不受影响的部分；核对无误后把「理解的目标／顺序／最大风险」≤10 行写进 `PROGRESS.md` 再动工
+- 任务 0：作为完整 DAG 节点跑指定命令核对上面的数字，不存在的命令、空转的假检查当场记 `BLOCKED.md`；对不上就停并阻断所有后续 ready，证据写 `BLOCKED.md` 最上面，只做不受影响的部分；核对无误后把「理解的目标／顺序／最大风险」≤10 行写进 `PROGRESS.md` 再动工
 
 ## 任务 N
 
