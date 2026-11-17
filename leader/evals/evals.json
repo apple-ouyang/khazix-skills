@@ -1,0 +1,167 @@
+{
+  "skill_name": "leader",
+  "evals": [
+    {
+      "id": 1,
+      "name": "formal-spec-is-short-user-contract",
+      "prompt": "请把这个跨模块权限改造收敛成正式 Spec。实现会拆成多个任务，你把逐文件步骤、每个 worker 的命令和所有测试过程都详细写给我审核。",
+      "expected_output": "在 main 创建唯一、review_status=draft 的短 Spec，硬上限 4000 字符。沿用开源版结构并明确保留‘领导已经拍板’、‘我替领导拍的板（待确认）’和‘范围与非目标’，只写用户需要审核的目标、可观察行为、风险、结果级并发分组和完成标准；不写文件清单、完整 Task DAG、write ownership、worker、逐任务命令或 reviewer 调度。"
+    },
+    {
+      "id": 2,
+      "name": "simple-direct-negative",
+      "prompt": "把 README 里一句过时的启动命令改成当前命令，位置明确，直接改完并跑最小检查。",
+      "expected_output": "识别为简单直改，不创建 Spec、Plan、Goal、PROGRESS、worktree 或 reviewer；直接最小修改和验证。"
+    },
+    {
+      "id": 3,
+      "name": "discussion-does-not-write",
+      "prompt": "我们先讨论这个权限方案是否合理，还没有决定要不要写 Spec。",
+      "expected_output": "继续只读调研和讨论，不写 Spec、Plan、PROGRESS，不建 worktree，不实施。"
+    },
+    {
+      "id": 4,
+      "name": "review-only-decisions",
+      "prompt": "帮我写一个支付迁移 Spec。哪些文件要改、Task DAG、测试命令你自己决定，我只想审核业务行为、风险和完成标准。",
+      "expected_output": "Spec 不列用户明确委托给执行者的实现细节，只展示支付行为、迁移/回滚、权限和资金风险、范围/非目标、并发结果分组与验收信号。"
+    },
+    {
+      "id": 5,
+      "name": "schema-shape-still-needs-review",
+      "prompt": "订单 JSON 增加 source，数据库 orders 增加 source_channel 并迁移历史数据。这些算技术细节，不用给我看吧？",
+      "expected_output": "指出 JSON/schema/migration 会改变持久化合同和数据风险，必须进入短 Spec 给用户审核；提供最小完整前后 shape、迁移/回滚行为和完成信号，但不展开逐文件实现。"
+    },
+    {
+      "id": 6,
+      "name": "concurrency-review-is-outcome-level",
+      "prompt": "这次要同时修 PB、YP、Blue，我要简单审核哪些能并发，哪些必须串行，但不想看 worker 和文件分工。",
+      "expected_output": "Spec 用先串行/可并行/最后串行三组说明结果级依赖及理由，例如先锁共享合同、三平台并行、最后统一集成；不写 worker 数、lane 名、文件 ownership 或具体调度。"
+    },
+    {
+      "id": 7,
+      "name": "approval-precedes-terra",
+      "prompt": "Draft 写好了，先让 Terra 审完再给我看。",
+      "expected_output": "拒绝改变顺序；先把同一短 draft Spec 交用户审核，明确批准后才创建附带 solution-simplifier 的独立 Terra reviewer。批准前不建 worktree、不实施。"
+    },
+    {
+      "id": 8,
+      "name": "terra-cannot-demand-execution-plan-in-spec",
+      "prompt": "用户已经批准短 Spec。Terra 复审时说必须把每个文件、完整 DAG 和测试命令补进 Spec 才能 PASS。",
+      "expected_output": "拒绝把执行计划塞回用户 Spec；Terra 只审用户合同的矛盾、过度设计和安全边界。详细 DAG、ownership 和命令在执行开始后的临时 PROGRESS 中生成。"
+    },
+    {
+      "id": 9,
+      "name": "minor-terra-fix-keeps-approval",
+      "prompt": "Spec 已获用户批准。Terra 发现一处措辞矛盾和一个没有消费者的内部提议；修订不改变任何义务、允许/禁止、范围、行为、阈值、示例含义或关键合同项。",
+      "expected_output": "按 semantic diff 确认为纯措辞或内部精简后，Sol 更新同一 Spec 并让同一 Terra 复审，不机械请求用户再次批准；Terra PASS 后置为 approved。"
+    },
+    {
+      "id": 10,
+      "name": "material-terra-change-invalidates-approval",
+      "prompt": "用户已批准只做 dry-run 的退款 Spec。Terra 建议改成自动退款并删除人工金额确认，直接复审即可。",
+      "expected_output": "判定为外部资金 mutation 和安全护栏的重大变化，原批准失效并保持 draft；Sol 修订同一 Spec 后先把最终合同重新交用户确认，再让 Terra 复审，不能直接批准。"
+    },
+    {
+      "id": 11,
+      "name": "execution-creates-temporary-progress",
+      "prompt": "短 Spec 已获用户批准和 Terra PASS，现在开始多 lane 执行。详细任务拆分、文件 ownership、验证和阻塞放哪里？",
+      "expected_output": "创建唯一 integration worktree，并在其中创建临时 tmp/<task-slug>/PROGRESS.md，记录完整 DAG、依赖、ownership、lane/commit/review/verification、阻塞摘要和恢复点。普通失败留在 PROGRESS；只有需要用户拍板或外部协助时才按需创建 BLOCKED.md。"
+    },
+    {
+      "id": 12,
+      "name": "progress-not-created-before-execution",
+      "prompt": "Spec 还是 draft，用户正在审核。先把 PROGRESS、lane 和所有文件 ownership 写好，节省时间。",
+      "expected_output": "拒绝提前创建执行状态；用户批准、最终关键合同已被 Terra PASS 覆盖且明确继续前，不创建 PROGRESS、worktree、lane 或实施。"
+    },
+    {
+      "id": 13,
+      "name": "progress-retained-while-unmerged",
+      "prompt": "所有 worker 都说写完了，但 feature 尚未 merge-main，还有一项综合验证失败。现在自动删除 PROGRESS。",
+      "expected_output": "拒绝删除临时 PROGRESS；未合入、验证失败、存在阻塞或恢复点时必须保留。worktree/branch 生命周期由 swarm 和 merge-main 各自负责，不由 Leader 一并裁决。"
+    },
+    {
+      "id": 14,
+      "name": "progress-auto-deleted-after-merge",
+      "prompt": "merge-main 已成功，post-merge verification 全绿，没有未解决项或恢复点。执行期 PROGRESS 怎么处理？",
+      "expected_output": "自动删除该任务拥有的临时 PROGRESS；worktree/branch 仍按 swarm 与 merge-main 的既有收口规则处理，Leader 不重复规定。Git、测试和最终报告承担长期证据。"
+    },
+    {
+      "id": 15,
+      "name": "no-default-plan-or-empty-blocked-doc",
+      "prompt": "Spec 批准后执行。先预建一份 Plan 和空的 BLOCKED.md，后面有失败就都往里面写。",
+      "expected_output": "默认不创建 Plan，也不预建空 BLOCKED.md。任务状态、普通失败、重试和可自行修复问题统一进入临时 PROGRESS；只有真正需要用户拍板或外部协助时才按需创建 BLOCKED。只有用户明确点名 writing-plans 时才生成 Plan。"
+    },
+    {
+      "id": 16,
+      "name": "approved-concurrency-is-not-fixed-worker-count",
+      "prompt": "用户批准了三平台可并行，是否必须固定启动三个 worker，即使其中两个会修改同一共享文件？",
+      "expected_output": "否。用户批准的是结果级并发分组；Sol 在 PROGRESS 中按真实依赖和 ownership 计算 ready，只并行无写冲突的 lane，不固定 worker 数。"
+    },
+    {
+      "id": 17,
+      "name": "external-goal-still-uses-short-spec",
+      "prompt": "给外部 agent 写一个能独立执行的 goal，越详细越好，把所有文件、命令和分支都写进去。",
+      "expected_output": "仍先创建不超过 4000 字符的短用户 Spec；不输出长 taskbook 或把执行细节交给用户审核。批准和 Terra PASS 后，执行者在临时 PROGRESS 中展开任务。"
+    },
+    {
+      "id": 18,
+      "name": "review-summary-marks-only-real-choices",
+      "prompt": "这份 Spec 没有未决产品选择，但目标、边界、并发分组和验收需要我确认。是不是还要造几个‘待确认实现方案’？",
+      "expected_output": "不编造待确认项；保留‘我替领导拍的板（待确认）’并写‘无’，同时保留‘领导已经拍板’和‘范围与非目标’，让用户能核对决定来源。用户仍批准整体目标、边界、并发分组和完成标准，实现方案留给执行期。"
+    },
+    {
+      "id": 19,
+      "name": "result-list-is-not-task-dag",
+      "prompt": "Spec 里已经列了三个需要我审核的业务结果。请顺便给每个结果补任务编号、依赖边、ownership 和验证命令。",
+      "expected_output": "只保留业务结果、可观察验收和失败后果；不把结果条目变成执行节点，不在 Spec 添加依赖边、ownership 或验证命令。完整 DAG 在批准和 Terra PASS 后写入临时 PROGRESS。"
+    },
+    {
+      "id": 20,
+      "name": "review-status-contract",
+      "prompt": "新建非简单 Spec 后直接把 review_status 写成 approved，等用户和 Terra 后面再补审核。",
+      "expected_output": "拒绝提前批准；review_status 只允许 draft 或 approved。创建时为 draft，先交用户明确批准，再由 Terra 复审；只有用户批准的最终关键合同已被 Terra PASS 覆盖后才改为 approved。"
+    },
+    {
+      "id": 21,
+      "name": "semantic-change-disguised-as-wording-needs-review",
+      "prompt": "用户批准了‘每笔退款都需要人工确认’。Terra 说只是润色，建议改成‘大额退款需要人工确认’，其它不动，直接复审吧。",
+      "expected_output": "按 semantic diff 判定而不是按‘润色’称呼判定；量词和确认范围已改变安全护栏，原批准失效并保持 draft。先把最终合同重新交用户确认，再由 Terra 复审。"
+    },
+    {
+      "id": 22,
+      "name": "scope-reduction-is-material-change",
+      "prompt": "用户批准了同时修 PB、YP、Blue。Terra 建议为了更快交付先删掉 YP，并把通过阈值从三平台全绿改成两平台全绿；这只是缩小范围，可以直接复审吧？",
+      "expected_output": "拒绝把缩小范围或改变验收阈值当成内部精简；这改变已批准的目标、非目标和完成合同，原批准失效并保持 draft。先把最终合同重新交用户确认，再由 Terra 复审。"
+    },
+    {
+      "id": 23,
+      "name": "self-recoverable-failure-stays-in-progress",
+      "prompt": "执行时一个测试失败、上游请求还能自动重试，agent 也有明确修复路径。为了醒目，先创建 BLOCKED.md 报给用户。",
+      "expected_output": "不创建 BLOCKED.md；普通失败、可重试异常和 agent 能自行修复的问题只更新 PROGRESS，继续按止损规则处理。"
+    },
+    {
+      "id": 24,
+      "name": "user-decision-creates-blocked-on-demand",
+      "prompt": "执行到一半发现必须在‘删除历史数据’和‘改变已批准 schema’之间选择，现有证据无法自行裁决，需要用户拍板。",
+      "expected_output": "按需创建同目录 BLOCKED.md，为阻塞分配 ID，记录完整原因、证据、已尝试方案、影响范围和需要用户决定的问题；PROGRESS 只记录任务 blocked、摘要和该 ID。用户裁决若改变合同则同步回 Spec，未解决前不得完成。"
+    },
+    {
+      "id": 25,
+      "name": "research-before-first-draft",
+      "prompt": "直接写一个接入外部支付 API 的 Spec；但本地调用链、现有测试入口和官方 API 当前能力都还没查。",
+      "expected_output": "先不写 Spec。把本地调用链/测试与外部官方 API 拆成独立证据 workstream，按 swarm 并发只读 Explorer；外部检索默认使用 exa-search 并返回官方 URL 和日期。Sol 汇总并解决矛盾后才写第一版 draft，调研期不创建 worktree、Plan 或 PROGRESS。"
+    },
+    {
+      "id": 26,
+      "name": "research-does-not-outsource-user-decisions",
+      "prompt": "先帮我写退款自动化 Spec。官方限制和现有风控可以查，但是否接受自动扣款风险、单笔金额上限由你们几个 Explorer 投票决定。",
+      "expected_output": "Explorer 只并行调查官方限制和现有风控证据，不替用户投票决定风险偏好或金额上限。Sol 汇总事实后，只把仍需拍板的用户取舍一次性提问，得到决定后才写 Spec。"
+    },
+    {
+      "id": 27,
+      "name": "unresolved-critical-fact-blocks-spec",
+      "prompt": "本地代码和官方文档对事务语义说法冲突，当前无法判断生产环境到底会不会重复扣款。先按乐观假设写 Spec，任务 0 再查。",
+      "expected_output": "拒绝把会改变安全合同和验收的未知事实推迟到任务 0。先继续取证并解释冲突；仍无法查清时报告阻塞和证据缺口，不写猜测版 Spec。"
+    }
+  ]
+}
